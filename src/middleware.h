@@ -30,6 +30,13 @@ typedef struct middleware {
 MIDDLEWARE* initMiddlewareTable();
 
 /**
+ * \brief Release memory
+ *
+ * \param middlewareTable Middleware table to release.
+ */
+void closeMiddlewareTable(MIDDLEWARE* middlewareTable);
+
+/**
  * \brief Add a new middleware in a table.
  *
  * \param middlewareTable Table to fill.

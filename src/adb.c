@@ -180,6 +180,9 @@ int main(int argc,char** argv){
     //processing middlewares
     executeMiddlewares(middlewares, argc-1, &argv[1]);
 
+    //release memory
+    closeMiddlewareTable(middlewares);
+
     // Return exit codes
     exit(0);
     return 0;

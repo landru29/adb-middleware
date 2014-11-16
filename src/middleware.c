@@ -41,6 +41,15 @@ MIDDLEWARE* initMiddlewareTable() {
 }
 
 /**
+ * \brief Release memory
+ *
+ * \param middlewareTable Middleware table to release.
+ */
+void closeMiddlewareTable(MIDDLEWARE* middlewareTable) {
+	free(middlewareTable);
+}
+
+/**
  * \brief resize a middleware table.
  *
  * \param middlewareTable Table to resize.
