@@ -12,6 +12,7 @@
 
 MIDDLEWARE* middlewares;
 
+
 /**
  * \brief Check if a file exists
  *
@@ -153,6 +154,10 @@ void pushCallback(int argc, char** argv) {
  */
 void logAndExecuteCommand(int argc, char** argv) {
     char* command;
+    char* stdoutData;
+    FILE* output;
+    char buffer[65536] = {0};
+
     // build the command
     command = buildCommand(argc, argv);
 
@@ -161,7 +166,13 @@ void logAndExecuteCommand(int argc, char** argv) {
 
     // Execute the command
     if ((command) && (strlen(command) > 0)) {
-        system(command);    
+        output = popen(command, "r");
+        fread(buffer, 1 , BLOCK_COPY_SIZE, output);
+        writeLog("########## ADB STD OUT ##########");
+        writeLog(buffer);
+        writeLog("#################################");
+        printf("%s", buffer);
+        //system(command);    
     } else {
         writeLog("No path is defined for adb; please create file :");
         writeLog(getIniPath());
@@ -172,6 +183,10 @@ void logAndExecuteCommand(int argc, char** argv) {
     free(command);
 }
 
+
+/**
+ * Main program
+ */
 int main(int argc,char** argv){
     int status = 0;
     char* command;
