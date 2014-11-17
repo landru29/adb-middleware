@@ -67,7 +67,7 @@ char* buildCommand(int argc,char** argv) {
     } else {
        // Initialize the command buffer with the command name
         buffer = (char*) malloc(strlen(realAdbPath)+4);
-        sprintf(buffer, "\"\"%s", realAdbPath);
+        sprintf(buffer, "\"\"%s\"", realAdbPath);
         size = strlen(buffer) + 1;
 
         // Loop on the arguments to append to the command buffer
