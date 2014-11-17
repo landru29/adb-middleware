@@ -94,8 +94,14 @@ int copyFile(char* inFile, char* outFile) {
     char* buffer;
     FILE* in;
     FILE* out;
-    in = fopen(inFile, "rb");
-    out = fopen(outFile, "wb");
+    if (!(in = fopen(inFile, "rb"))) {
+        writeLog("Cannot open file");
+        writeLog(inFile);
+    }
+    if (!(out = fopen(outFile, "wb"))) {
+        writeLog("Cannot create file");
+        writeLog(outFile);
+    }
     if ((in) && (out)) {
         buffer = (char*)malloc(BLOCK_COPY_SIZE);
         do {
@@ -122,8 +128,8 @@ void pushCallback(int argc, char** argv) {
         // build in and out file
         inFile = argv[1];
         for(i=strlen(inFile)-1; i>=0; i--) {
-            if ((inFile[i] == '\\') || (i==0)) {
-                outFile = getOutFilePath(&inFile[(inFile[i] == '\\') ? i+1 : i]);
+            if ((inFile[i] == '\\') || (inFile[i] == '/') || (i==0)) {
+                outFile = getOutFilePath(&inFile[(inFile[i] == '\\') || (inFile[i] == '/') ? i+1 : i]);
                 i=0;
             }
         }
