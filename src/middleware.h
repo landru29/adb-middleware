@@ -15,7 +15,7 @@
 #include <malloc.h>
 #include <string.h>
 
-typedef void (CALLBACK *middlewareCallback) (int argc, char** argv);
+typedef void (CALLBACK *middlewareCallback) (int argc, char** argv, int* returnCode);
 
 typedef struct middleware {
     char* command;

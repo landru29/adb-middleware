@@ -6,7 +6,7 @@
  * \date november 2014
  *
  * This lib manage middlewares. For instance, add a middleware like this
- *     void foo (int argc, char** argv) { printf("%d\n", argc);}
+ *     void foo (int argc, char** argv, int* returnCode) { printf("%d\n", argc); *returnCode = 1;}
  *     MIDDLEWARES* myMid = initMiddlewareTable();
  *     myMid = addMiddleware(myMid, "foo", foo);
  *     executeMiddlewares(myMid, 3, {"foo", "arg1", "arg2"});
@@ -108,12 +108,16 @@ void showMiddleWareTable(MIDDLEWARE* middlewareTable) {
 void executeMiddlewares(MIDDLEWARE* middlewareTable, int argc, char* argv[]) {
 	size_t size;
 	size_t i;
+	int returnCode=1;
 	if (argc>0) {
 		size = sizeOfMiddlewareTable(middlewareTable);
 		for(i=0; i<size; i++) {
 			if ((strcmp(middlewareTable[i].command, argv[0]) == 0) || (strcmp(middlewareTable[i].command, "*") == 0)) {
 				if (middlewareTable[i].callback) {
-					middlewareTable[i].callback(argc, argv);
+					middlewareTable[i].callback(argc, argv, &returnCode); 
+					if (!returnCode) {
+						return;
+					}
 				}
 			}
 		}

@@ -3,27 +3,14 @@
 #include <malloc.h>
 #include <string.h>
 #include <time.h>
-#include <sys/stat.h>
 #include "middleware.h"
 #include "path.h"
+#include "copy.h"
 #include "constants.h"
 
 
 
 MIDDLEWARE* middlewares;
-
-
-/**
- * \brief Check if a file exists
- *
- * \param filename filename to check
- * \return 1 if file exists
- */
-int file_exist(char *filename)
-{
-  struct stat buffer;   
-  return (stat(filename, &buffer) == 0);
-}
 
 
 /**
@@ -84,43 +71,12 @@ char* buildCommand(int argc,char** argv) {
 }
 
 /**
- * \brief copy file
- *
- * \param inFile source file
- * \param outfile destination file
- * \return 0 on success
- */
-int copyFile(char* inFile, char* outFile) {
-    int len;
-    char* buffer;
-    FILE* in;
-    FILE* out;
-    if (!(in = fopen(inFile, "rb"))) {
-        writeLog("Cannot open file");
-        writeLog(inFile);
-    }
-    if (!(out = fopen(outFile, "wb"))) {
-        writeLog("Cannot create file");
-        writeLog(outFile);
-    }
-    if ((in) && (out)) {
-        buffer = (char*)malloc(BLOCK_COPY_SIZE);
-        do {
-            len = fread(buffer, 1 , BLOCK_COPY_SIZE, in);
-            fwrite(buffer , 1 , len , out);
-        } while (len>0);
-        free(buffer);
-    } else return -1;
-    return 0;
-}
-
-/**
  * \brief Callback for push command
  *
  * \param argc number of arguments to evaluate
  * \param argv arguments to evaluate
  */
-void pushCallback(int argc, char** argv) {
+void pushCallback(int argc, char** argv, int* returnCode) {
     char* outFile;
     char* inFile;
     int i;
@@ -144,6 +100,25 @@ void pushCallback(int argc, char** argv) {
         }
         
     }
+    *returnCode = 1;
+}
+
+/**
+ * \brief Callback for shell command
+ *
+ * \param argc number of arguments to evaluate
+ * \param argv arguments to evaluate
+ */
+void openShell(int argc, char** argv, int* returnCode) {
+    if (argc > 1) {
+        *returnCode = 1;
+        return;
+    }
+    *returnCode = 0;
+    // create a child process
+    // listen to stdin and send it to the process
+    // if 'exit' kill the child process and return
+
 }
 
 /**
@@ -152,11 +127,12 @@ void pushCallback(int argc, char** argv) {
  * \param argc number of arguments to evaluate
  * \param argv arguments to evaluate
  */
-void logAndExecuteCommand(int argc, char** argv) {
+void logAndExecuteCommand(int argc, char** argv, int* returnCode) {
     char* command;
     char* stdoutData;
     FILE* output;
     char buffer[65536] = {0};
+
 
     // build the command
     command = buildCommand(argc, argv);
@@ -172,6 +148,7 @@ void logAndExecuteCommand(int argc, char** argv) {
         writeLog(buffer);
         writeLog("#################################");
         printf("%s", buffer);
+        pclose(output);
         //system(command);    
     } else {
         writeLog("No path is defined for adb; please create file :");
@@ -181,6 +158,7 @@ void logAndExecuteCommand(int argc, char** argv) {
 
     // Release the memory
     free(command);
+    *returnCode = 1;
 }
 
 
@@ -195,6 +173,7 @@ int main(int argc,char** argv){
     middlewares = initMiddlewareTable();
 
     // adding a middleware
+    middlewares = addMiddleware(middlewares, "shell", openShell);
     middlewares = addMiddleware(middlewares, "push", pushCallback);
     middlewares = addMiddleware(middlewares, "*", logAndExecuteCommand);
 
